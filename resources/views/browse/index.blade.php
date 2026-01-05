@@ -50,10 +50,20 @@
             </div>
         </div>
     </div>
+@else
+    <div class="relative w-full h-[65vh] md:h-[90vh] flex items-center justify-center bg-[#141414]">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-black text-gray-800 uppercase">No Movies Available</h1>
+            <p class="text-gray-500 mt-4">Upload a video to get started.</p>
+            <a href="{{ route('admin.upload') }}" class="inline-block mt-6 bg-netflix-red text-white px-6 py-2 rounded font-bold hover:bg-red-700 transition">
+                Upload Video
+            </a>
+        </div>
+    </div>
 @endif
 
 <!-- 2. CONTENT ROWS CONTAINER -->
-<div class="px-4 md:px-12 pb-20 -mt-24 relative z-10 space-y-12">
+<div class="px-4 md:px-12 pb-20 mt-10 relative z-10 space-y-12">
 
     <!-- ROW 1: CONTINUE WATCHING (Only if exists) -->
     @if($continue_watching->isNotEmpty())

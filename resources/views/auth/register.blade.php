@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netflix - Sign Up</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+   @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Custom Netflix Red */
         .bg-netflix-red { background-color: #e50914; }

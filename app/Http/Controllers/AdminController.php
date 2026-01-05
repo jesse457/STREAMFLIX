@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Movie;
 use App\Jobs\ConvertVideoForStreaming;
+use App\Models\Movie;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
@@ -17,37 +17,52 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'video' => 'required|mimes:mp4,mov,avi,mkv|max:500000', // 500MB
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'release_year' => 'required|integer|min:1900|max:' . (date('Y') + 5),
+            'rating' => 'required|string|max:10',
+            'type' => 'required|in:movie,series',
+            'thumbnail' => 'required|image|max:10240', // 10MB
+            'video' => 'required_if:type,movie|mimes:mp4,mov,avi,mkv|max:500000', // 500MB
         ]);
 
-        $videoFile = $request->file('video');
+        // 1. Upload Thumbnail to S3
+        $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 's3');
 
-        // Sanitize filename
-        $filename = time() . '_' . preg_replace('/\s+/', '_', $videoFile->getClientOriginalName());
-
-        // Save to 'local' disk in 'temp' folder.
-        // IMPORTANT: storeAs returns the full path, e.g., "temp/1767233573_video.mp4"
-        $videoPath = $videoFile->storeAs('temp', $filename, 'local');
-
-        $video = Movie::create([
+        // 2. Create Movie Record
+        $movie = Movie::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title) . '-' . time(),
             'description' => $request->description ?? 'No description provided.',
-            'thumbnail_url' => 'https://via.placeholder.com/640x360?text=Processing...',
-            'video_url' => $filename, // FIXED: Save the full path (temp/filename.ext), not just the filename
-            'release_year' => date('Y'),
-            'rating' => 'PG-13',
-            'type' => 'movie'
+            'thumbnail_url' => $thumbnailPath,
+            'release_year' => $request->release_year,
+            'rating' => $request->rating,
+            'type' => $request->type,
+            'views' => 0,
         ]);
 
-        // Dispatch Job
-        ConvertVideoForStreaming::dispatch($video);
+        // 3. Handle Video if type is movie
+        if ($request->type === 'movie' && $request->hasFile('video')) {
+            $videoFile = $request->file('video');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $videoFile->getClientOriginalName());
+            
+            // Step A: Save to local temp for processing
+            $videoFile->storeAs('temp', $filename, 'local');
+            
+            // Step B: Update movie with the temp filename so the Job can find it
+            $movie->update(['video_url' => $filename]);
 
-        return response()->json([
-            'id' => $video->id,
-            'message' => 'Upload successful! Transcoding started in background.'
-        ]);
+            // Step C: Dispatch Job
+            ConvertVideoForStreaming::dispatch($movie);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $movie->id,
+                'message' => 'Upload successful! ' . ($request->type === 'movie' ? 'Processing started.' : 'Content added to library.'),
+            ]);
+        }
+
+        return redirect()->route('browse.index')->with('success', 'Content added successfully!');
     }
 }

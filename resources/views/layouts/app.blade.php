@@ -6,32 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Netflix Clone') }}</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        netflix: {
-                            black: '#141414',
-                            dark: '#181818',
-                            red: '#E50914',
-                            hover: '#b20710',
-                            gray: '#808080'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+   @vite(['resources/css/app.css', 'resources/js/app.js'])
+   
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -61,8 +37,8 @@
                     <a href="{{ route('browse.index') }}" class="text-2xl md:text-3xl font-black text-netflix-red tracking-tighter uppercase">STREAMFLIX</a>
 
                     <div class="hidden md:flex items-baseline space-x-6 text-sm font-light text-gray-300">
-                        <a href="{{ route('browse.index') }}" class="text-white font-bold cursor-default">Home</a>
-                        <a href="#" class="hover:text-white transition">Series</a>
+                        <a href="{{ route('browse.index') }}" class="text-white hover:text-gray-300 transition {{ request()->routeIs('browse.index') ? 'font-bold underline' : '' }}">Home</a>
+                        <a href="{{ route('browse.series') }}" class="hover:text-white transition {{ request()->routeIs('browse.series') ? 'font-bold underline' : '' }}">Series</a>
                         <a href="#" class="hover:text-white transition">Movies</a>
                         <a href="#" class="hover:text-white transition">My List</a>
                     </div>
@@ -75,6 +51,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </button>
 
+                    @auth
                     <!-- Profile Dropdown -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 focus:outline-none">
@@ -100,6 +77,9 @@
                             </form>
                         </div>
                     </div>
+                    @else
+                        <a href="{{ route('login') }}" class="bg-red-600 text-white px-4 py-1.5 rounded font-semibold text-sm hover:bg-red-700 transition">Sign In</a>
+                    @endauth
                 </div>
             </div>
         </div>

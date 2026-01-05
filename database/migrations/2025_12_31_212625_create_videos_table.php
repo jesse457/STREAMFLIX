@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-     Schema::create('videos', function (Blueprint $table) {
-        $table->id();
-        $table->string('title');
-        $table->string('original_filename')->nullable();
-        $table->string('stream_path')->nullable(); // Path to .m3u8 on S3
-        $table->boolean('processed')->default(false);
-        $table->timestamps();
-    });
+        Schema::create('videos', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->string('original_filename')->nullable();
+            $table->string('stream_path')->nullable(); // Path to .m3u8 on S3
+            $table->boolean('processed')->default(false);
+            $table->timestamps();
+        });
     }
 
     /**

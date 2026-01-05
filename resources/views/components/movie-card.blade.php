@@ -4,7 +4,7 @@
 
     <!-- Thumbnail -->
     <div class="aspect-video w-full relative">
-        <img src="{{ $movie->thumbnail_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+        <img src="{{ Storage::disk('s3')->url($movie->thumbnail_url) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
     </div>
 
     <!-- Content (Hidden by default, shown on hover like Netflix) -->

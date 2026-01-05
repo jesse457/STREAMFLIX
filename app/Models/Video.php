@@ -10,6 +10,6 @@ class Video extends Model
         'title',
         'original_filename',
         'stream_path',
-        'processed'
+        'processed',
     ];
 }

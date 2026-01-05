@@ -17,8 +17,8 @@ class Profile extends Model
     public function myList()
     {
         return $this->belongsToMany(Movie::class, 'my_list')
-                    ->withPivot('added_at')
-                    ->orderByPivot('added_at', 'desc');
+            ->withPivot('added_at')
+            ->orderByPivot('added_at', 'desc');
     }
 
     // Interaction: Continue Watching

@@ -1,94 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.profile')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Netflix - Who's Watching?</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #141414;
-        }
+@section('content')
+    <!-- Netflix Background Color #141414 -->
+    <div class="flex items-center justify-center min-h-screen bg-[#141414] font-sans text-white overflow-hidden">
 
-        /* Smooth zoom effect on hover */
-        .profile-card:hover .avatar-img {
-            border-color: white;
-        }
+        <!-- Main Animation Container -->
+        <div class="flex flex-col items-center animate-fade-in w-full max-w-5xl px-4">
 
-        .profile-card:hover .profile-name {
-            color: white;
-        }
-    </style>
-</head>
+            <!-- Header -->
+            <h1 class="text-3xl md:text-[3.5rem] font-medium mb-8 md:mb-12 text-center text-white drop-shadow-md select-none">
+                Who's watching?
+            </h1>
 
-<body class="flex items-center justify-center min-h-screen font-sans text-white">
+            <!-- Profile Grid -->
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8 mb-16 md:mb-24">
 
-    <!-- Main Container -->
-    <div class="flex flex-col items-center animate-fade-in">
+                @foreach ($profiles as $profile)
+                    <!-- Individual Profile Item -->
+                    <form action="{{ route('profiles.switch', $profile->id) }}" method="POST"
+                        class="group w-24 md:w-[10rem] flex flex-col items-center cursor-pointer">
+                        @csrf
+                        <button type="submit" class="w-full focus:outline-none">
 
-        <!-- Header -->
-        <h1 class="text-3xl md:text-5xl font-medium mb-8 md:mb-12 drop-shadow-lg text-center">
-            Who's watching?
-        </h1>
+                            <!-- Avatar Image Wrapper -->
+                            <!-- Netflix borders are transparent by default, white on hover, approx 2-3px -->
+                            <div class="w-24 h-24 md:w-[10rem] md:h-[10rem] rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-colors duration-200 box-border">
+                                <img src="{{ $profile->avatar ?? 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' }}"
+                                    alt="{{ $profile->name }}"
+                                    class="w-full h-full object-cover">
+                            </div>
 
-        <!-- Profile Grid -->
-        <!-- Flex on mobile, Row on desktop -->
-        <div class="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 md:mb-16">
+                            <!-- Profile Name -->
+                            <!-- Text is #808080 (gray) and turns white on hover -->
+                            <span class="block mt-4 text-[#808080] text-xs md:text-xl text-center group-hover:text-white transition-colors duration-200 select-none truncate px-1">
+                                {{ $profile->name }}
+                            </span>
+                        </button>
+                    </form>
+                @endforeach
 
-            @foreach ($profiles as $profile)
-                <!-- Individual Profile Item -->
-                <!-- We wrap it in a form to handle the POST request for session switching -->
-                <form action="{{ route('profiles.switch', $profile->id) }}" method="POST"
-                    class="group profile-card w-24 md:w-40 cursor-pointer text-center">
-                    @csrf
-                    <button type="submit" class="w-full focus:outline-none">
-                        <!-- Avatar Image -->
-                        <div
-                            class="avatar-img w-24 h-24 md:w-40 md:h-40 rounded-md overflow-hidden border-4 border-transparent box-border transition-all duration-200 group-hover:border-white">
-                            <!-- Default avatar if none exists -->
-                            <img src="{{ $profile->avatar ?? 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' }}"
-                                alt="{{ $profile->name }}" class="w-full h-full object-cover">
+                <!-- Add Profile Button -->
+                <a href="{{ route('profiles.create') }}"
+                    class="group w-24 md:w-[10rem] flex flex-col items-center cursor-pointer no-underline">
+
+                    <!-- Icon Wrapper -->
+                    <div class="w-24 h-24 md:w-[10rem] md:h-[10rem] flex items-center justify-center rounded-md border-2 border-transparent group-hover:bg-white group-hover:border-white transition-colors duration-200 box-border relative">
+                        <!-- Default State: Dark Circle with Plus -->
+                        <div class="bg-transparent group-hover:hidden w-full h-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 md:h-20 md:w-20 text-[#808080]" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                            </svg>
                         </div>
 
-                        <!-- Profile Name -->
-                        <span
-                            class="profile-name block mt-4 text-gray-500 text-xs md:text-xl transition-colors duration-200 group-hover:text-white">
-                            {{ $profile->name }}
-                        </span>
-                    </button>
-                </form>
-            @endforeach
+                        <!-- Hover State: Plus Icon becomes dark inside white bg -->
+                        <!-- Note: Netflix usually creates this effect by swapping backgrounds, simplified here -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="hidden group-hover:block h-12 w-12 md:h-20 md:w-20 text-[#808080]" viewBox="0 0 20 20" fill="currentColor">
+                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
 
-            <!-- Add Profile Button (Visual Only for Resume) -->
-            <!-- Add Profile Button (Functional) -->
-            <a href="{{ route('profiles.create') }}"
-                class="group profile-card w-24 md:w-40 cursor-pointer text-center inline-block">
-                <div
-                    class="avatar-img w-24 h-24 md:w-40 md:h-40 rounded-md flex items-center justify-center bg-transparent border-4 border-transparent group-hover:bg-white group-hover:border-white transition-all duration-200">
-                    <!-- Plus Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500 group-hover:text-gray-800"
-                        fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                    </svg>
-                </div>
-                <span
-                    class="profile-name block mt-4 text-gray-500 text-xs md:text-xl transition-colors duration-200 group-hover:text-white">
-                    Add Profile
-                </span>
-            </a>
+                    <!-- Add Profile Text -->
+                    <span class="block mt-4 text-[#808080] text-xs md:text-xl text-center group-hover:text-white transition-colors duration-200 select-none">
+                        Add Profile
+                    </span>
+                </a>
+
+            </div>
+
+            <!-- Manage Profiles Button -->
+            <!-- Clean, uppercase, wide tracking, border gray-500 -->
+            <button
+                class="border border-[#808080] text-[#808080] px-6 py-2 md:px-10 md:py-2 text-[13px] md:text-[1.2vw] tracking-[2px] uppercase hover:border-white hover:text-white transition-all duration-200 select-none bg-transparent">
+                Manage Profiles
+            </button>
 
         </div>
-
-        <!-- Manage Profiles Button -->
-        <button
-            class="border border-gray-500 text-gray-500 px-6 py-2 md:px-8 md:py-2.5 text-sm md:text-lg uppercase tracking-widest hover:border-white hover:text-white transition-colors duration-200">
-            Manage Profiles
-        </button>
-
     </div>
 
-</body>
+    <style>
+        /* Custom Fade In Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(1.1); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
 
-</html>
+        /* Force font smoothing for that crisp Netflix look */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+@endsection

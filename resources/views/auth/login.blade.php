@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netflix - Login</title>
-    <!-- Tailwind CSS CDN for instant styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
+   @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Custom Netflix Red */
         .bg-netflix-red { background-color: #e50914; }
@@ -29,10 +29,11 @@
 </head>
 <body class="hero-bg min-h-screen flex flex-col font-sans text-white">
 
-    <!-- Navbar (Logo only) -->
-    <div class="px-8 py-6 w-full flex justify-between items-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="h-8 md:h-12">
-    </div>
+   <!-- Navbar (Logo only) -->
+<!-- Navbar (Logo only) -->
+<div class="px-8 py-6 w-full flex justify-between items-center">
+    <span class="text-red-600 font-bold text-2xl md:text-4xl tracking-tighter cursor-pointer">STREAMFLIX</span>
+</div>
 
     <!-- Login Container -->
     <div class="flex-grow flex items-center justify-center px-4">

@@ -19,7 +19,7 @@ class ProfileController extends Controller
         }
 
         return view('profiles.index', [
-            'profiles' => $profiles
+            'profiles' => $profiles,
         ]);
     }
 
@@ -34,7 +34,6 @@ class ProfileController extends Controller
         return view('profiles.create');
     }
 
-    // 3. Save the New Profile
     public function store(Request $request)
     {
         $request->validate([
@@ -43,27 +42,37 @@ class ProfileController extends Controller
 
         Auth::user()->profiles()->create([
             'name' => $request->name,
-            // Assign a random Netflix-style avatar based on name length (simulating randomness)
             'avatar' => $this->getRandomAvatar(),
-            'is_kid' => $request->has('is_kid'), // Checkbox logic
+            'is_kid' => $request->has('is_kid'),
         ]);
 
         return redirect()->route('profiles.index');
     }
 
-    // Helper to get random avatars
     private function getRandomAvatar()
     {
+        // These are Base64 encoded versions of the Netflix-style smiley SVGs
         $avatars = [
-            'https://occ-0-1723-1722.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovAW4k/AAAABfNXUMVXGhnCZwPI1SghnGpmUgqS_J-owMff-jigqn8onK9jlzu16dbqFRC73tnvtpJeNPIc-c8c4C_i3lPpH1g.png?r=fcd',
-            'https://occ-0-1723-1722.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovAW4k/AAAABY5cwIbM7shRfcXPHxb8Qy-XYV_frkimbkckA25fpv33xFqT139V07t_xM9F8aZ5_5v-0S5r2f0I.png?r=fcd',
-            'https://occ-0-1723-1722.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovAW4k/AAAABZ8d3P3uQ9oF0-C_7JpS5iC5-y9F3r5_5v-0S5r2f0I.png?r=fcd',
-            'https://occ-0-1723-1722.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovAW4k/AAAABd3Ie_J3xI1e1i7-75j9o6a00S5r2f0I.png?r=fcd'
+            // Blue Avatar
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzJiNTljZSIvPjxwYXRoIGQ9Ik0yNSAzNWMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptMzYgMGMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptLTMzIDMwaDQ0YzIgMCA0IDIgNCA0djRjMCAyLTIsNCA0IDRKMjhjLTIsMC00LTItNC00di00YzAtMiAyLTQgNC00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+
+            // Red Avatar
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U1MDkxNCIvPjxwYXRoIGQ9Ik0yNSAzNWMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptMzYgMGMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptLTMzIDMwaDQ0YzIgMCA0IDIgNCA0djRjMCAyLTIsNCA0IDRKMjhjLTIsMC00LTItNC00di00YzAtMiAyLTQgNC00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+
+            // Yellow Avatar
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1YzUxOCIvPjxwYXRoIGQ9Ik0yNSAzNWMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptMzYgMGMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptLTMzIDMwaDQ0YzIgMCA0IDIgNCA0djRjMCAyLTIsNCA0IDRKMjhjLTIsMC00LTItNC00di00YzAtMiAyLTQgNC00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+
+            // Green Avatar
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzVjYjg1YyIvPjxwYXRoIGQ9Ik0yNSAzNWMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptMzYgMGMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptLTMzIDMwaDQ0YzIgMCA0IDIgNCA0djRjMCAyLTIsNCA0IDRKMjhjLTIsMC00LTItNC00di00YzAtMiAyLTQgNC00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+
+            // Purple Avatar
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2EwMjBmMCIvPjxwYXRoIGQ9Ik0yNSAzNWMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptMzYgMGMwLTIgMi00IDQtNGg2YzIgMCA0IDIgNCA0djEwYzAgMi0yIDQtNCA0aC02Yy0yIDAtNC0yLTQtNFYzNXptLTMzIDMwaDQ0YzIgMCA0IDIgNCA0djRjMCAyLTIsNCA0IDRKMjhjLTIsMC00LTItNC00di00YzAtMiAyLTQgNC00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
         ];
+
         return $avatars[array_rand($avatars)];
     }
 
-     // 2. Handle Profile Selection
+    // 2. Handle Profile Selection
     public function switchProfile(Request $request, $id)
     {
         // SECURITY: Ensure this profile actually belongs to the user
@@ -77,5 +86,4 @@ class ProfileController extends Controller
         // Redirect to the main movie browse page
         return redirect()->route('browse.index');
     }
-
 }

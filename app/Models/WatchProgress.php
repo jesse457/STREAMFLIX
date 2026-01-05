@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class WatchProgress extends Model
 {
     protected $table = 'watch_progress';
+
     protected $guarded = [];
+
     public $timestamps = false; // We manage last_watched_at manually
 
     protected $casts = [
