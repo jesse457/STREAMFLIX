@@ -48,11 +48,11 @@
         function netflixPlayer() {
             return {
                 hls: null,
-                // Ensure quotes are handled correctly for blade
-                videoSrc: "{{ Storage::disk('s3')->url($movie->video_url) }}",
+                // Handle both Movie and Series
+                videoSrc: "{{ $currentEpisode ? Storage::disk('s3')->url($currentEpisode->video_url) : ($movie->video_url ? Storage::disk('s3')->url($movie->video_url) : '') }}",
                 poster: "{{ Storage::disk('s3')->url($movie->thumbnail_url) }}",
-                movieTitle: "{{ $movie->title ?? 'Stranger Things' }}",
-                episodeTitle: "{{ $movie->episode_title ?? 'S1:E1' }}",
+                movieTitle: "{{ $movie->title }}",
+                episodeTitle: "{{ $currentEpisode ? 'S' . $currentEpisode->season_number . ':E' . $currentEpisode->episode_number . ' - ' . $currentEpisode->title : '' }}",
 
                 // State
                 isPlaying: false,
@@ -68,6 +68,7 @@
                 // UI State
                 showControls: true,
                 isSettingsOpen: false,
+                isEpisodesOpen: false,
                 settingsMenu: 'main',
                 timer: null,
                 isFullscreen: false,
@@ -82,6 +83,10 @@
 
                 initPlayer() {
                     const video = this.$refs.video;
+                    if (!this.videoSrc) {
+                        this.isLoading = false;
+                        return;
+                    }
                     if (Hls.isSupported()) {
                         this.hls = new Hls();
                         this.hls.loadSource(this.videoSrc);
@@ -120,7 +125,7 @@
 
                 resetTimer() {
                     clearTimeout(this.timer);
-                    if (this.isPlaying && !this.isSettingsOpen) {
+                    if (this.isPlaying && !this.isSettingsOpen && !this.isEpisodesOpen) {
                         this.timer = setTimeout(() => {
                             this.showControls = false;
                             this.isSettingsOpen = false;
@@ -387,8 +392,54 @@
 
                     <div class="flex items-center gap-4 md:gap-6">
                         <div class="text-sm font-bold text-gray-300" x-text="formatTimeLeft()"></div>
+                        
+                        @if($movie->type === 'series' && $movie->episodes->count() > 0)
                         <div class="relative">
-                            <button @click.stop="isSettingsOpen = !isSettingsOpen; settingsMenu = 'main'" class="text-white hover:text-white/80 transition-colors transform active:scale-95 p-1">
+                            <button @click.stop="isEpisodesOpen = !isEpisodesOpen; isSettingsOpen = false" class="text-white hover:text-white/80 transition-colors transform active:scale-95 p-1 flex items-center gap-2">
+                                <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M19 15v2H5v-2h14m2-10H3v2h18V5m0 4H3v2h18V9m0 4H3v2h18v-2M5 19h14v2H5v-2z"/></svg>
+                                <span class="hidden sm:inline text-xs font-bold uppercase tracking-widest">Episodes</span>
+                            </button>
+                            
+                            <div x-show="isEpisodesOpen" @click.away="isEpisodesOpen = false" 
+                                 class="absolute bottom-14 right-0 bg-black/95 border border-[#333] w-72 max-h-[70vh] rounded-md shadow-2xl p-0 z-50 overflow-hidden flex flex-col"
+                                 x-transition:enter="transition ease-out duration-100" 
+                                 x-transition:enter-start="opacity-0 scale-95" 
+                                 x-transition:enter-end="opacity-100 scale-100">
+                                
+                                <div class="px-4 py-3 border-b border-[#333] flex justify-between items-center bg-[#181818]">
+                                    <span class="text-xs font-black uppercase text-gray-400">Chapters & Episodes</span>
+                                    <span class="text-[10px] text-netflix-red font-bold">{{ $movie->episodes->count() }} Total</span>
+                                </div>
+
+                                <div class="overflow-y-auto custom-scrollbar bg-black/40">
+                                    @foreach($movie->episodes()->orderBy('season_number')->orderBy('episode_number')->get() as $ep)
+                                        <a href="{{ route('browse.watch.episode', ['movie' => $movie->id, 'episode' => $ep->id]) }}" 
+                                           class="group flex items-start gap-3 p-3 hover:bg-[#333] transition-colors {{ $currentEpisode && $currentEpisode->id == $ep->id ? 'bg-[#333] ring-1 ring-netflix-red/30' : '' }}">
+                                            <div class="relative flex-shrink-0 w-24 aspect-video bg-[#181818] rounded overflow-hidden">
+                                                <img src="{{ Storage::disk('s3')->url($movie->thumbnail_url) }}" class="w-full h-full object-cover opacity-60">
+                                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                </div>
+                                                @if($currentEpisode && $currentEpisode->id == $ep->id)
+                                                    <div class="absolute bottom-1 right-1">
+                                                        <div class="w-2 h-2 bg-netflix-red rounded-full animate-pulse shadow-[0_0_5px_#E50914]"></div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="flex-grow min-w-0">
+                                                <p class="text-[10px] font-bold text-netflix-red uppercase">S{{ $ep->season_number }}:E{{ $ep->episode_number }}</p>
+                                                <p class="text-sm font-bold text-gray-200 truncate group-hover:text-white">{{ $ep->title }}</p>
+                                                <p class="text-[10px] text-gray-500 line-clamp-1 italic">Now Streaming</p>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="relative">
+                            <button @click.stop="isSettingsOpen = !isSettingsOpen; isEpisodesOpen = false; settingsMenu = 'main'" class="text-white hover:text-white/80 transition-colors transform active:scale-95 p-1">
                                 <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
                             </button>
                             <div x-show="isSettingsOpen" @click.away="isSettingsOpen = false" class="absolute bottom-14 right-[-10px] bg-black/95 border border-[#333] w-64 rounded-md shadow-2xl p-0 z-50 text-sm font-sans flex flex-col" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">

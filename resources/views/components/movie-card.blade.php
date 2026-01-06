@@ -1,6 +1,6 @@
 @props(['movie'])
 
-<a href="{{ url('/watch/' . $movie->id) }}" class="group relative bg-[#181818] rounded-sm overflow-hidden transition-all duration-300 hover:scale-110 hover:z-50 shadow-lg hover:shadow-black/70 delay-100">
+<a href="{{ route('browse.watch', $movie) }}" class="group relative bg-[#181818] rounded-sm overflow-hidden transition-all duration-300 hover:scale-110 hover:z-50 shadow-lg hover:shadow-black/70 delay-100">
 
     <!-- Thumbnail -->
     <div class="aspect-video w-full relative">

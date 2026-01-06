@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use App\Models\Episode;
 use App\Models\Profile;
 use App\Models\WatchProgress;
 
@@ -105,12 +106,25 @@ class BrowseController extends Controller
     /**
      * Show the watch (player) screen.
      */
-    public function watch($id)
+    public function watch(Movie $movie, Episode $episode = null)
     {
-        $movie = Movie::findOrFail($id);
+        if ($episode && $episode->movie_id !== $movie->id) {
+            abort(404);
+        }
+
+        $movie->load('episodes');
         
+        $currentEpisode = $episode;
+
+        if ($movie->type === 'series' && !$currentEpisode) {
+            $currentEpisode = $movie->episodes()
+                ->orderBy('season_number')
+                ->orderBy('episode_number')
+                ->first();
+        }
+
         $movie->increment('views');
 
-        return view('browse.watch', compact('movie'));
+        return view('browse.watch', compact('movie', 'currentEpisode'));
     }
 }

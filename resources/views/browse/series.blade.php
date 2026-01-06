@@ -36,7 +36,7 @@
 
                 <div class="flex items-center space-x-3 pt-2">
                     <!-- Play button usually starts S1:E1 or the last watched episode -->
-                    <a href="{{ url('/series/' . $hero_series->slug . '/watch') }}" class="flex items-center justify-center bg-white text-black hover:bg-white/80 px-6 md:px-8 py-2 md:py-3 rounded font-bold text-lg transition duration-200">
+                    <a href="{{ route('browse.watch', $hero_series) }}" class="flex items-center justify-center bg-white text-black hover:bg-white/80 px-6 md:px-8 py-2 md:py-3 rounded font-bold text-lg transition duration-200">
                         <svg class="w-7 h-7 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         Play
                     </a>
@@ -65,7 +65,7 @@
             <h2 class="text-lg md:text-xl font-bold text-white mb-2">Continue Watching for {{ Auth::user()->name }}</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 @foreach($continue_watching as $progress)
-                    <a href="{{ url('/watch-episode/' . $progress->episode_id) }}" class="group relative bg-netflix-dark rounded overflow-hidden transition-all duration-300 hover:scale-105">
+                    <a href="{{ route('browse.watch.episode', ['movie' => $progress->movie_id, 'episode' => $progress->episode_id]) }}" class="group relative bg-netflix-dark rounded overflow-hidden transition-all duration-300 hover:scale-105">
                         <div class="aspect-video w-full relative">
                             <img src="{{ Storage::disk('s3')->url($progress->movie->thumbnail_url) }}" class="w-full h-full object-cover">
                             <div class="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-1 rounded">

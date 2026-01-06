@@ -17,50 +17,60 @@ class ConvertVideoForStreaming implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $video;
+    public $model;
     public $timeout = 3600; // 1 hour
     public $tries = 1;
 
-    public function __construct(Movie $video)
+    public function __construct($model)
     {
-        $this->video = $video;
+        $this->model = $model;
     }
 
     public function handle()
     {
-        // Define Bitrates (Low, Mid, High quality)
+        $modelName = strtolower(class_basename($this->model));
+        $id = $this->model->id;
+
+        // Define Bitrates
         $lowBitrate = (new X264)->setKiloBitrate(250);
         $midBitrate = (new X264)->setKiloBitrate(500);
         $highBitrate = (new X264)->setKiloBitrate(1000);
-        // We apply this exactly to your setup:
+
+        // Step A: Generate Thumbnail
         FFMpeg::fromDisk('local')
-            ->open('temp/'.$this->video->video_url)
+            ->open('temp/'.$this->model->video_url)
             ->getFrameFromSeconds(10)
             ->export()
-            ->toDisk('s3') // Directly save to S3 as per docs
-            ->save("thumbnails/{$this->video->id}/thumbnail.jpg");
-        // Open the local temp file
-        FFMpeg::fromDisk('local')
-            ->open('temp/'.$this->video->video_url)
+            ->toDisk('s3')
+            ->save("thumbnails/{$modelName}_{$id}/thumbnail.jpg");
 
-            // Export for HLS
+        // Step B: Export for HLS
+        FFMpeg::fromDisk('local')
+            ->open('temp/'.$this->model->video_url)
             ->exportForHLS()
-            ->setSegmentLength(10) // 10 second chunks
+            ->setSegmentLength(10)
             ->addFormat($lowBitrate)
             ->addFormat($midBitrate)
             ->addFormat($highBitrate)
-
-            // Save to S3
             ->toDisk('s3')
-            ->save("videos/{$this->video->id}/playlist.m3u8");
+            ->save("videos/{$modelName}_{$id}/playlist.m3u8");
 
-        // Update Database
-        $this->video->update([
-            'thumbnail_url' => "thumbnails/{$this->video->id}/thumbnail.jpg",
-            'video_url' => "videos/{$this->video->id}/playlist.m3u8",
-        ]);
-        FacadesLog::info("Video ID {$this->video->id} processed and saved to S3.");
-        // Optional: Delete local temp file
-        // Storage::disk('local')->delete('temp/' . $this->video->original_filename);
+        // Step C: Update Database
+        // For episodes, we don't necessarily update a thumbnail_url field on the episode itself 
+        // unless it's designed to have one. The migration for episodes doesn't have thumbnail_url.
+        // It only has video_url.
+        
+        $updateData = [
+            'video_url' => "videos/{$modelName}_{$id}/playlist.m3u8",
+        ];
+
+        // If the model has thumbnail_url column (like Movie), update it
+        if (isset($this->model->thumbnail_url)) {
+            $updateData['thumbnail_url'] = "thumbnails/{$modelName}_{$id}/thumbnail.jpg";
+        }
+
+        $this->model->update($updateData);
+
+        FacadesLog::info("{$modelName} ID {$id} processed and saved to S3.");
     }
 }

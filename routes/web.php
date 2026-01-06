@@ -26,7 +26,8 @@ Route::middleware('auth')->group(function () {
     // 2. Main Application
     Route::get('/browse', [BrowseController::class, 'index'])->name('browse.home'); // Alias for /browse
     Route::get('/series', [BrowseController::class, 'series'])->name('browse.series');
-    Route::get('/watch/{id}', [BrowseController::class, 'watch'])->name('browse.watch');
+    Route::get('/watch/{movie}', [BrowseController::class, 'watch'])->name('browse.watch');
+    Route::get('/watch/{movie}/episode/{episode}', [BrowseController::class, 'watch'])->name('browse.watch.episode');
 });
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/upload', [AdminController::class, 'index'])->name('admin.upload');
